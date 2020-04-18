@@ -73,16 +73,23 @@ import { Car, cars as cars_list } from './cars';
   // /cars?make=tesla
   app.get("/cars/", (req: Request, res: Response) => {
     let {make} = req.query;
-
+    console.log(make)
     if (!make) {
-      return res.status(200).send(cars);
+      return res.status(400).send(`make missing`);
     }
 
-    let filtered_cars:Car[] = [];
-    for (let i in cars)
-      if(cars[i]['make']==make)
-        filtered_cars.push(cars[i]);
+    // let filtered_cars:Car[] = [];
+    // for (let i in cars)
+    //   if(cars[i]['make']===make)
+    //     filtered_cars.push(cars[i]);
+    // return res.status(200).send(filtered_cars);
+
+    let filtered_cars = cars.filter((car)=>car.make === make);
+    if(filtered_cars && filtered_cars.length===0) {
+    	return res.status(400).send(`car not found`);
+    }
     return res.status(200).send(filtered_cars);
+
   } );
 
   // @TODO Add an endpoint to get a specific car
@@ -90,14 +97,22 @@ import { Car, cars as cars_list } from './cars';
   // it should fail gracefully if no matching car is found
   app.get("/cars/:id", (req:Request, res:Response) => {
     let { id } = req.params;
-
     if (!id) {
       res.status(400).send(`id is required`);
     }
 
-    for (let i in cars)
-      if (cars[i]['id'] == id)
-        return res.status(200).send(cars[i])
+    // for (let i in cars)
+    //   if (cars[i].id == id)
+    //     return res.status(200).send(cars[i])
+
+    let car = cars.filter((car) => car.id == id);
+
+    if(car && car.length===0) {
+    	return res.status(400).send(`car not found`);
+    }
+
+    return res.status(200).send(car);
+
   } )
 
   /// @TODO Add an endpoint to post a new car to our list
@@ -113,7 +128,7 @@ import { Car, cars as cars_list } from './cars';
       let new_car:Car = {'id':id, 'make':make, 'model':model,'type':type, 'cost':cost};
       cars_list.push(new_car)
 
-      res.status(200).send(new_car)
+      res.status(201).send(new_car)
     } )
   // Start the Server
   app.listen( port, () => {
